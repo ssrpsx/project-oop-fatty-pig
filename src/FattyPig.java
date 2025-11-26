@@ -36,8 +36,6 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     int velocityY = 0;
     int gravity = 1;
 
-    int smokeX = PigX;
-    int smokeY = PigY;
     int smokeWidth = 134;
     int smokeHeight = 102;
     int currentSmokeFrame = -1;
