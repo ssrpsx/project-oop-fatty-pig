@@ -1,8 +1,6 @@
 
 import java.awt.*;
 import java.awt.event.*;
-import java.lang.reflect.Array;
-import java.sql.Time;
 import java.util.ArrayList;
 import javax.swing.*;
 
@@ -19,57 +17,18 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     Image[] smokeImg = new Image[3];
     Image carrotImg;
 
+    int Pig_skin = 0;
+    int bg_skin = 0;
+
     // bird class
     int PigX = boardWidth / 8;
     int PigY = boardHeight / 2;
     int PigWidth = 134; //134
     int PigHeight = 102; //102
 
-    int Pig_skin = 0;
-    int bg_skin = 0;
 
     int flapCounter = 0;
     int flapDuration = 12;
-
-    class Pig {
-
-        int x = PigX;
-        int y = PigY;
-        int width = PigWidth;
-        int height = PigHeight;
-        Image img;
-
-        Pig(Image img) {
-            this.img = img;
-        }
-    }
-
-    class Pipe {
-
-        int x = boardWidth;
-        int y = 0;
-        int width = 128;
-        int height = 1024;
-        Image img;
-        boolean passed = false;
-
-        Pipe(Image img) {
-            this.img = img;
-        }
-    }
-
-    class carrot {
-
-        int x = 0;
-        int y = 0;
-        int width = 116;
-        int height = 116;
-        Image img;
-
-        carrot(Image img) {
-            this.img = img;
-        }
-    }
 
     // logic game
     Pig pig;
@@ -102,6 +61,43 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     Timer fadeTimer;
     Timer animation;
 
+    class Pig {
+        int x = PigX;
+        int y = PigY;
+        int width = PigWidth;
+        int height = PigHeight;
+        Image img;
+
+        Pig(Image img) {
+            this.img = img;
+        }
+    }
+
+    class Pipe {
+        int x = boardWidth;
+        int y = 0;
+        int width = 128;
+        int height = 1024;
+        Image img;
+        boolean passed = false;
+
+        Pipe(Image img) {
+            this.img = img;
+        }
+    }
+
+    class carrot {
+        int x = 0;
+        int y = 0;
+        int width = 116;
+        int height = 116;
+        Image img;
+
+        carrot(Image img) {
+            this.img = img;
+        }
+    }
+
     public FattyPig() {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setFocusable(true);
@@ -109,44 +105,53 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
 
         String[] Img_list = {"day", "night", "desert"};
         for (int i = 0; i < Img_list.length; i++) {
-            String bgPath = "/assets/fattypigbg_" + Img_list[i] + ".png";
-            String topPath = "/assets/toppipe_" + Img_list[i] + ".png";
-            String bottomPath = "/assets/bottompipe_" + Img_list[i] + ".png";
+
+            String bgPath = "/assets/bg/fattypigbg_" + Img_list[i] + ".png";
+            String topPath = "/assets/pipe/toppipe_" + Img_list[i] + ".png";
+            String bottomPath = "/assets/pipe/bottompipe_" + Img_list[i] + ".png";
 
             java.net.URL u = getClass().getResource(bgPath);
             if (u == null) {
                 System.err.println("Resource not found: " + bgPath);
-            } else {
+            }
+            else {
                 backgroundImg[i] = new ImageIcon(u).getImage();
             }
 
             u = getClass().getResource(topPath);
             if (u == null) {
                 System.err.println("Resource not found: " + topPath);
-            } else {
+            }
+            else {
                 topPipeImg[i] = new ImageIcon(u).getImage();
             }
 
             u = getClass().getResource(bottomPath);
             if (u == null) {
                 System.err.println("Resource not found: " + bottomPath);
-            } else {
+            }
+            else {
                 bottomPipeImg[i] = new ImageIcon(u).getImage();
             }
 
             for (int j = 0; j < 2; j++) {
-                String pigPath = "/assets/fattypig_" + Img_list[i] + "_" + j + ".png";
+
+                String pigPath = "/assets/pig/fattypig_" + Img_list[i] + "_" + j + ".png";
+
                 u = getClass().getResource(pigPath);
                 if (u == null) {
                     System.err.println("Resource not found: " + pigPath);
-                } else {
+                }
+                else {
                     PigImg[i][j] = new ImageIcon(u).getImage();
                 }
             }
         }
-        carrotImg = new ImageIcon(getClass().getResource("/assets/Carrot.png")).getImage();
+        carrotImg = new ImageIcon(getClass().getResource("/assets/other/Carrot.png")).getImage();
+
         for (int i = 0; i < 3; i++) {
-            String smokePath = "/assets/smoke_" + i + ".png";
+
+            String smokePath = "/assets/other/smoke_" + i + ".png";
 
             java.net.URL u = getClass().getResource(smokePath);
             if (u == null) {
@@ -169,7 +174,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
         change_bg.start();
 
         // place carrot timer
-        placeCarrotTimer = new Timer(1000, e -> placeCarrot());
+        placeCarrotTimer = new Timer(5000, e -> placeCarrot());
         placeCarrotTimer.start();
 
         // game loop
@@ -203,7 +208,6 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
 
             overlapsPipe = false;
 
-            // วนลูปผ่านท่อทั้งหมดเพื่อตรวจสอบการชน
             for (Pipe pipe : pipes) {
                 if (collision_carrot_with_pipe(objCarrot, pipe)) {
                     overlapsPipe = true;
@@ -221,18 +225,14 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     }
 
     public void draw(Graphics g) {
-        // background
         g.drawImage(backgroundImg[bg_skin], 0, 0, boardWidth, boardHeight, null);
 
-        // pig
-        
         g.drawImage(pig.img, pig.x, pig.y, pig.width, pig.height, null);
 
         if (currentSmokeFrame != -1 && currentSmokeFrame < smokeImg.length) {
             g.drawImage(smokeImg[currentSmokeFrame], pig.x, pig.y, smokeWidth, smokeHeight, null);
         }
 
-        // pipes
         for (Pipe pipe : pipes) {
             g.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height, null);
         }
@@ -240,7 +240,6 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
         for (carrot carrot : carrots) {
             g.drawImage(carrot.img, carrot.x, carrot.y, carrot.width, carrot.height, null);
         }
-
 
         // score
         g.setColor(Color.white);
@@ -250,14 +249,17 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
         // fade overlay
         if (fadeOpacity > 0f) {
             Graphics2D g2d = (Graphics2D) g;
+
             g2d.setColor(new Color(0f, 0f, 0f, fadeOpacity));
             g2d.fillRect(0, 0, boardWidth, boardHeight);
 
             if (gameOver) {
                 g2d.setFont(new Font("Arial", Font.BOLD, 80));
                 g2d.setColor(new Color(139, 0, 0, Math.min(255, (int) (fadeOpacity * 255))));
+
                 String text = "GAME OVER";
                 int textWidth = g2d.getFontMetrics().stringWidth(text);
+                
                 g2d.drawString(text, (boardWidth - textWidth) / 2, boardHeight / 2);
             }
         }
@@ -272,7 +274,8 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
         if (flapCounter > 0) {
             pig.img = PigImg[Pig_skin][1];
             flapCounter--;
-        } else {
+        }
+        else {
             pig.img = PigImg[Pig_skin][0];
         }
 
@@ -297,7 +300,8 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
             if (carrot.x + carrot.width < 0) {
                 carrots.remove(i);
                 i--;
-            } else if (collision_carrot(pig, carrot)) {
+            } 
+            else if (collision_carrot(pig, carrot)) {
                 carrots.remove(i);
                 i--;
 
@@ -346,6 +350,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
                 fadeOpacity = 0f;
 
                 bg_skin = 0;
+                Pig_skin = 0;
 
                 pig.y = PigY;
                 velocityY = 0;
