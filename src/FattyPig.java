@@ -52,6 +52,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
 
     boolean gameOver = false;
     double score = 0;
+    double high_score = 0;
 
     // fade variables
     float fadeOpacity = 0f;
@@ -233,18 +234,20 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
             g.drawImage(smokeImg[currentSmokeFrame], pig.x, pig.y, smokeWidth, smokeHeight, null);
         }
 
-        for (Pipe pipe : pipes) {
-            g.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height, null);
-        }
-
         for (carrot carrot : carrots) {
             g.drawImage(carrot.img, carrot.x, carrot.y, carrot.width, carrot.height, null);
         }
 
+        for (Pipe pipe : pipes) {
+            g.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height, null);
+        }
+
+
         // score
         g.setColor(Color.white);
         g.setFont(new Font("Arial", Font.PLAIN, 32));
-        g.drawString(gameOver ? "Game Over = " + (int) score : "My Score = " + String.valueOf((int) score), 10, 35);
+        g.drawString(gameOver ? "Game Over = " + (int) score : "My Score = " + String.valueOf((int) score), 10, 70);
+        g.drawString("High Score = " + String.valueOf((int) high_score), 10, 35);
 
         // fade overlay
         if (fadeOpacity > 0f) {
@@ -344,6 +347,8 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
                 if (fadeTimer != null && fadeTimer.isRunning()) {
                     fadeTimer.stop();
                 }
+                if(score > high_score)
+                    high_score = score;
 
                 isFading = false;
                 fadeIn = false;
@@ -429,7 +434,8 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
                         bg_skin = buffer;
                     }
                 }
-            } else {
+            }
+            else {
                 if (!gameOver) {
                     fadeOpacity -= 0.05f;
                 }
