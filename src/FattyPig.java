@@ -1,6 +1,8 @@
 
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.reflect.Array;
+import java.sql.Time;
 import java.util.ArrayList;
 import javax.swing.*;
 
@@ -14,6 +16,8 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     Image[][] PigImg = new Image[3][2];
     Image[] topPipeImg = new Image[3];
     Image[] bottomPipeImg = new Image[3];
+    Image[] smokeImg = new Image[3];
+    Image carrotImg;
 
     // bird class
     int PigX = boardWidth / 8;
@@ -21,7 +25,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     int PigWidth = 134; //134
     int PigHeight = 102; //102
 
-    int Pig_skin = 2;
+    int Pig_skin = 0;
     int bg_skin = 0;
 
     int flapCounter = 0;
@@ -54,17 +58,38 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
         }
     }
 
+    class carrot {
+
+        int x = 0;
+        int y = 0;
+        int width = 116;
+        int height = 116;
+        Image img;
+
+        carrot(Image img) {
+            this.img = img;
+        }
+    }
+
     // logic game
     Pig pig;
     int velocityX = -12;
     int velocityY = 0;
     int gravity = 1;
 
+    int smokeX = PigX;
+    int smokeY = PigY;
+    int smokeWidth = 134;
+    int smokeHeight = 102;
+    int currentSmokeFrame = -1;
+
     ArrayList<Pipe> pipes;
+    ArrayList<carrot> carrots;
 
     Timer gameLoop;
     Timer placePipeTimer;
     Timer change_bg;
+    Timer placeCarrotTimer;
 
     boolean gameOver = false;
     double score = 0;
@@ -73,7 +98,9 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     float fadeOpacity = 0f;
     boolean isFading = false;
     boolean fadeIn = false;
+
     Timer fadeTimer;
+    Timer animation;
 
     public FattyPig() {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
@@ -117,9 +144,21 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
                 }
             }
         }
+        carrotImg = new ImageIcon(getClass().getResource("/assets/Carrot.png")).getImage();
+        for (int i = 0; i < 3; i++) {
+            String smokePath = "/assets/smoke_" + i + ".png";
+
+            java.net.URL u = getClass().getResource(smokePath);
+            if (u == null) {
+                System.err.println("Resource not found: " + smokePath);
+            } else {
+                smokeImg[i] = new ImageIcon(u).getImage();
+            }
+        }
 
         pig = new Pig(PigImg[Pig_skin][0]);
         pipes = new ArrayList<>();
+        carrots = new ArrayList<>();
 
         // place pipes timer
         placePipeTimer = new Timer(1500, e -> placePipes());
@@ -128,6 +167,10 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
         // background change
         change_bg = new Timer(15000, e -> startFade());
         change_bg.start();
+
+        // place carrot timer
+        placeCarrotTimer = new Timer(1000, e -> placeCarrot());
+        placeCarrotTimer.start();
 
         // game loop
         gameLoop = new Timer(1000 / 60, this);
@@ -139,12 +182,36 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
         int openingSpace = 300;
 
         Pipe topPipe = new Pipe(topPipeImg[bg_skin]);
-        topPipe.y = randomPipeY ;
+        topPipe.y = randomPipeY;
         pipes.add(topPipe);
 
         Pipe bottomPipe = new Pipe(bottomPipeImg[bg_skin]);
         bottomPipe.y = topPipe.y + 1024 + openingSpace;
         pipes.add(bottomPipe);
+    }
+
+    void placeCarrot() {
+        carrot objCarrot = new carrot(carrotImg);
+        boolean overlapsPipe = true;
+
+        while (overlapsPipe) {
+
+            objCarrot.x = boardWidth;
+
+            int randomCarrotY = (int) (100 + Math.random() * 600);
+            objCarrot.y = randomCarrotY;
+
+            overlapsPipe = false;
+
+            // วนลูปผ่านท่อทั้งหมดเพื่อตรวจสอบการชน
+            for (Pipe pipe : pipes) {
+                if (collision_carrot_with_pipe(objCarrot, pipe)) {
+                    overlapsPipe = true;
+                    break;
+                }
+            }
+        }
+        carrots.add(objCarrot);
     }
 
     @Override
@@ -158,17 +225,27 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
         g.drawImage(backgroundImg[bg_skin], 0, 0, boardWidth, boardHeight, null);
 
         // pig
+        
         g.drawImage(pig.img, pig.x, pig.y, pig.width, pig.height, null);
+
+        if (currentSmokeFrame != -1 && currentSmokeFrame < smokeImg.length) {
+            g.drawImage(smokeImg[currentSmokeFrame], pig.x, pig.y, smokeWidth, smokeHeight, null);
+        }
 
         // pipes
         for (Pipe pipe : pipes) {
             g.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height, null);
         }
 
+        for (carrot carrot : carrots) {
+            g.drawImage(carrot.img, carrot.x, carrot.y, carrot.width, carrot.height, null);
+        }
+
+
         // score
         g.setColor(Color.white);
         g.setFont(new Font("Arial", Font.PLAIN, 32));
-        g.drawString(gameOver ? "Game Over: " + (int) score : String.valueOf((int) score), 10, 35);
+        g.drawString(gameOver ? "Game Over = " + (int) score : "My Score = " + String.valueOf((int) score), 10, 35);
 
         // fade overlay
         if (fadeOpacity > 0f) {
@@ -213,12 +290,35 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
             }
         }
 
+        for (int i = 0; i < carrots.size(); i++) {
+            carrot carrot = carrots.get(i);
+            carrot.x += velocityX;
+
+            if (carrot.x + carrot.width < 0) {
+                carrots.remove(i);
+                i--;
+            } else if (collision_carrot(pig, carrot)) {
+                carrots.remove(i);
+                i--;
+
+                random_skin();
+            }
+        }
+
         if (pig.y >= boardHeight) {
             triggerFade();
         }
     }
 
     boolean collision(Pig a, Pipe b) {
+        return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+    }
+
+    boolean collision_carrot(Pig a, carrot b) {
+        return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+    }
+
+    boolean collision_carrot_with_pipe(carrot a, Pipe b) {
         return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
     }
 
@@ -249,11 +349,14 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
 
                 pig.y = PigY;
                 velocityY = 0;
-                pipes.clear();
                 gameOver = false;
                 score = 0;
+                pipes.clear();
+                carrots.clear();
+
                 gameLoop.start();
                 placePipeTimer.start();
+                placeCarrotTimer.start();
                 change_bg.start();
             }
         }
@@ -266,8 +369,36 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
             gameLoop.stop();
             change_bg.stop();
             placePipeTimer.stop();
+            placeCarrotTimer.stop();
             startFade();
         }
+    }
+
+    void random_skin() {
+        int buffer = (int) (Math.random() * 3);
+        while (buffer == Pig_skin) {
+            buffer = (int) (Math.random() * 3);
+        }
+
+        final int final_new_skin = buffer;
+
+        currentSmokeFrame = 0;
+
+        if (animation != null && animation.isRunning()) {
+            animation.stop();
+        }
+
+        animation = new Timer(100, e -> {
+            currentSmokeFrame++;
+
+            if (currentSmokeFrame >= smokeImg.length) {
+                Pig_skin = final_new_skin;
+                currentSmokeFrame = -1;
+                animation.stop();
+            }
+            repaint();
+        });
+        animation.start();
     }
 
     void startFade() {
