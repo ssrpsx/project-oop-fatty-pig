@@ -1,4 +1,7 @@
 
+import javax.sound.sampled.*;
+import java.io.IOException;
+import java.net.URL;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -61,6 +64,10 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     Timer fadeTimer;
     Timer animation;
 
+    Clip scoreClip;
+    Clip carrotClip;
+    Clip changeScene;
+
     class Pig {
 
         int x = PigX;
@@ -105,6 +112,10 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setFocusable(true);
         addKeyListener(this);
+
+        scoreClip = loadSound("/assets/sound/score.wav");
+        carrotClip = loadSound("/assets/sound/getCarrot.wav");
+        changeScene = loadSound("/assets/sound/changeScene.wav");
 
         String[] Img_list = {"day", "night", "desert"};
         for (int i = 0; i < Img_list.length; i++) {
@@ -185,12 +196,41 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
         gameLoop.start();
     }
 
+    // 1. ฟังก์ชันช่วยโหลดเสียง (ใช้ตอนเริ่มเกม)
+    public Clip loadSound(String filePath) {
+        try {
+            URL url = getClass().getResource(filePath);
+            if (url == null) {
+                System.err.println("ไม่พบไฟล์เสียง: " + filePath);
+                return null;
+            }
+            AudioInputStream audioInput = AudioSystem.getAudioInputStream(url);
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioInput);
+            return clip;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void playClip(Clip clip) {
+        if (clip != null) {
+            if (clip.isRunning()) {
+                clip.stop();
+            }
+
+            clip.setFramePosition(0);
+            clip.start();
+        }
+    }
+
     void continue_game() {
-        if(timer_game > 800){
+        if (timer_game > 800) {
             timer_game -= 50;
             placePipeTimer.setDelay(timer_game);
         }
-        if(velocityX > -40){
+        if (velocityX > -40) {
             velocityX -= 2;
         }
     }
@@ -307,6 +347,10 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
             if (!pipe.passed && pig.x > pipe.x + pipe.width) {
                 score += 0.5;
                 pipe.passed = true;
+
+                if (score % 1 == 0) {
+                    playClip(scoreClip);
+                }
             }
 
             if (collision(pig, pipe)) {
@@ -325,6 +369,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
                 carrots.remove(i);
                 i--;
 
+                playClip(carrotClip);
                 random_skin();
             }
         }
@@ -437,6 +482,11 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     void startFade() {
         isFading = true;
         fadeIn = false;
+        
+        if (!gameOver) {
+            playClip(changeScene);
+        }
+
         fadeTimer = new Timer(50, e -> {
             if (!fadeIn) {
                 fadeOpacity += 0.05f;

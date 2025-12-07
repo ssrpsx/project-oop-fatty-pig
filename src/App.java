@@ -6,7 +6,7 @@ public class App {
 
         JButton startBtn;
         JButton exitBtn;
-        Image bg;
+        Image bg;   
 
         public MenuPanel() {
             setLayout(null);
