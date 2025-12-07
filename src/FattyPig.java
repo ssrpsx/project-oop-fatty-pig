@@ -20,12 +20,11 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     int Pig_skin = 0;
     int bg_skin = 0;
 
-    // bird class
+    // pig class
     int PigX = boardWidth / 8;
     int PigY = boardHeight / 2;
     int PigWidth = 134; //134
     int PigHeight = 102; //102
-
 
     int flapCounter = 0;
     int flapDuration = 12;
@@ -35,6 +34,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     int velocityX = -12;
     int velocityY = 0;
     int gravity = 1;
+    int timer_game = 1500;
 
     int smokeWidth = 134;
     int smokeHeight = 102;
@@ -47,6 +47,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     Timer placePipeTimer;
     Timer change_bg;
     Timer placeCarrotTimer;
+    Timer continue_game_Timer;
 
     boolean gameOver = false;
     double score = 0;
@@ -61,6 +62,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     Timer animation;
 
     class Pig {
+
         int x = PigX;
         int y = PigY;
         int width = PigWidth;
@@ -73,6 +75,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     }
 
     class Pipe {
+
         int x = boardWidth;
         int y = 0;
         int width = 128;
@@ -86,6 +89,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
     }
 
     class carrot {
+
         int x = 0;
         int y = 0;
         int width = 116;
@@ -112,24 +116,21 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
             java.net.URL u = getClass().getResource(bgPath);
             if (u == null) {
                 System.err.println("Resource not found: " + bgPath);
-            }
-            else {
+            } else {
                 backgroundImg[i] = new ImageIcon(u).getImage();
             }
 
             u = getClass().getResource(topPath);
             if (u == null) {
                 System.err.println("Resource not found: " + topPath);
-            }
-            else {
+            } else {
                 topPipeImg[i] = new ImageIcon(u).getImage();
             }
 
             u = getClass().getResource(bottomPath);
             if (u == null) {
                 System.err.println("Resource not found: " + bottomPath);
-            }
-            else {
+            } else {
                 bottomPipeImg[i] = new ImageIcon(u).getImage();
             }
 
@@ -140,8 +141,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
                 u = getClass().getResource(pigPath);
                 if (u == null) {
                     System.err.println("Resource not found: " + pigPath);
-                }
-                else {
+                } else {
                     PigImg[i][j] = new ImageIcon(u).getImage();
                 }
             }
@@ -164,8 +164,12 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
         pipes = new ArrayList<>();
         carrots = new ArrayList<>();
 
+        // speed game
+        continue_game_Timer = new Timer(5000, e -> continue_game());
+        continue_game_Timer.start();
+
         // place pipes timer
-        placePipeTimer = new Timer(1500, e -> placePipes());
+        placePipeTimer = new Timer(timer_game, e -> placePipes());
         placePipeTimer.start();
 
         // background change
@@ -179,6 +183,16 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
         // game loop
         gameLoop = new Timer(1000 / 60, this);
         gameLoop.start();
+    }
+
+    void continue_game() {
+        if(timer_game > 800){
+            timer_game -= 50;
+            placePipeTimer.setDelay(timer_game);
+        }
+        if(velocityX > -40){
+            velocityX -= 2;
+        }
     }
 
     void placePipes() {
@@ -240,6 +254,13 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
             g.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height, null);
         }
 
+        if (Pig_skin == bg_skin) {
+            pig.width = 67;
+            pig.height = 51;
+        } else {
+            pig.width = 134;
+            pig.height = 102;
+        }
 
         // score
         g.setColor(Color.white);
@@ -260,7 +281,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
 
                 String text = "GAME OVER";
                 int textWidth = g2d.getFontMetrics().stringWidth(text);
-                
+
                 g2d.drawString(text, (boardWidth - textWidth) / 2, boardHeight / 2);
             }
         }
@@ -275,8 +296,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
         if (flapCounter > 0) {
             pig.img = PigImg[Pig_skin][1];
             flapCounter--;
-        }
-        else {
+        } else {
             pig.img = PigImg[Pig_skin][0];
         }
 
@@ -301,8 +321,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
             if (carrot.x + carrot.width < 0) {
                 carrots.remove(i);
                 i--;
-            } 
-            else if (collision_carrot(pig, carrot)) {
+            } else if (collision_carrot(pig, carrot)) {
                 carrots.remove(i);
                 i--;
 
@@ -345,8 +364,9 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
                 if (fadeTimer != null && fadeTimer.isRunning()) {
                     fadeTimer.stop();
                 }
-                if(score > high_score)
+                if (score > high_score) {
                     high_score = score;
+                }
 
                 isFading = false;
                 fadeIn = false;
@@ -356,13 +376,16 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
                 Pig_skin = 0;
 
                 pig.y = PigY;
+                velocityX = -12;
                 velocityY = 0;
+                timer_game = 1500;
                 gameOver = false;
                 score = 0;
                 pipes.clear();
                 carrots.clear();
 
                 gameLoop.start();
+                continue_game_Timer.start();
                 placePipeTimer.start();
                 placeCarrotTimer.start();
                 change_bg.start();
@@ -378,6 +401,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
             change_bg.stop();
             placePipeTimer.stop();
             placeCarrotTimer.stop();
+            continue_game_Timer.stop();
             startFade();
         }
     }
@@ -404,6 +428,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
                 currentSmokeFrame = -1;
                 animation.stop();
             }
+
             repaint();
         });
         animation.start();
@@ -432,8 +457,7 @@ public class FattyPig extends JPanel implements ActionListener, KeyListener {
                         bg_skin = buffer;
                     }
                 }
-            }
-            else {
+            } else {
                 if (!gameOver) {
                     fadeOpacity -= 0.05f;
                 }
