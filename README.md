@@ -53,4 +53,4 @@ Each theme affects both the map and available pig skins.
 ---
 
 ## 🖼️ Screenshots
-<img src="src/screenshots/example.gif">
+<img src="src\screenshots\example.gif">
