@@ -55,7 +55,7 @@ Each theme affects both the map and available pig skins.
 ## 🖼️ Screenshots
 <img src="src\screenshots\main.png">
 
-<img src="src\screenshots\example.gif" style="width:100%;">
+<img src="src\screenshots\example.gif" width="100%">
 
 ## Installation & Run the game without .exe
 
