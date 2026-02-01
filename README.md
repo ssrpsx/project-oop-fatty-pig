@@ -53,4 +53,23 @@ Each theme affects both the map and available pig skins.
 ---
 
 ## 🖼️ Screenshots
+<img src="src\screenshots\main.png">
+
 <img src="src\screenshots\example.gif">
+
+## Installation & Run the game without .exe
+
+### Git clone this repo
+```bash
+git clone https://github.com/ssrpsx/project-oop-fatty-pig.git
+```
+
+### Move to the folder
+```bash
+cd project-oop-fatty-pig/src
+```
+
+### Run the game with .java
+```bash
+java App.java 
+```
