@@ -9,7 +9,7 @@ After a game over, the player can restart the game immediately.
 
 ---
 
-## 🎮 Gameplay
+## Gameplay
 
 - Press **Spacebar** to make the pig fly upward  
 - Control the timing carefully to avoid obstacles  
@@ -17,19 +17,19 @@ After a game over, the player can restart the game immediately.
 
 ---
 
-## 🥕 Carrot & Skin System
+## Carrot & Skin System
 
 - Carrots appear during gameplay  
 - When the player collects a carrot, the game **randomly assigns a pig skin**
 
-### ✨ Special Effect
+### Special Effect
 - If the **pig skin matches the current map skin**:
   - The pig becomes **2 times smaller**
   - This makes the game **easier to play** by improving maneuverability
 
 ---
 
-## 🌍 Maps & Skins
+## Maps & Skins
 
 The game includes **3 different themes**:
 1. Green Grass Theme  
@@ -40,7 +40,7 @@ Each theme affects both the map and available pig skins.
 
 ---
 
-## ⭐ Features
+## Features
 
 - 2D single-player arcade gameplay  
 - Score tracking system  
@@ -52,7 +52,7 @@ Each theme affects both the map and available pig skins.
 
 ---
 
-## 🖼️ Screenshots
+## Screenshots
 <img src="src\screenshots\main.png">
 
 <img src="src\screenshots\example.gif" width="100%">
@@ -71,5 +71,5 @@ FattyPig-1.zip
 
 ### 3. Run the game
 ```bash
-\FattyPig-1\FattyPig\FattyPig.exe"
+\FattyPig-1\FattyPig\FattyPig.exe
 ```
