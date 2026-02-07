@@ -59,7 +59,7 @@ Each theme affects both the map and available pig skins.
 
 ## Installation & Run the game
 
-### 1. Download
+### 1. Download from this url
 ```bash
 https://github.com/ssrpsx/project-oop-fatty-pig/releases/download/1.0.0/FattyPig.zip
 ```
